@@ -10,7 +10,9 @@
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org/)
 [![Groq](https://img.shields.io/badge/Groq-LLM-FF6F00?style=for-the-badge&logo=groq&logoColor=white)](https://groq.com/)
 [![FAISS](https://img.shields.io/badge/FAISS-Vector_Store-0052CC?style=for-the-badge&logo=meta&logoColor=white)](https://faiss.ai/)
+[![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 
+</div>
 
 ---
 
@@ -24,6 +26,8 @@
 - [Local Development Setup](#-local-development-setup)
 - [API Endpoints](#-api-endpoints)
 - [Deployment](#-deployment)
+- [Screenshots](#-screenshots)
+- [Future Improvements](#-future-improvements)
 
 ---
 
@@ -497,6 +501,36 @@ curl http://localhost:8001/healthz
 ```
 
 > For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+---
+
+## 📸 Screenshots
+
+> *Screenshots coming soon*
+
+| Page | Preview |
+|---|---|
+| **Dashboard** | ![Dashboard](https://via.placeholder.com/600x350?text=Dashboard) |
+| **Content Generator** | ![Generator](https://via.placeholder.com/600x350?text=Content+Generator) |
+| **Document Upload** | ![Upload](https://via.placeholder.com/600x350?text=Document+Upload) |
+| **Document Library** | ![Library](https://via.placeholder.com/600x350?text=Document+Library) |
+| **RAG Chat** | ![Chat](https://via.placeholder.com/600x350?text=RAG+Chat) |
+| **Settings** | ![Settings](https://via.placeholder.com/600x350?text=Settings) |
+
+---
+
+## 🔮 Future Improvements
+
+- [ ] **Multi-document search** — Query across all indexed documents simultaneously
+- [ ] **Conversation history** — Persistent chat history with context-aware follow-ups
+- [ ] **Cross-encoder re-ranker** — Improve result relevance with Cohere/Cross-encoder
+- [ ] **Dark/Light mode toggle** — Theme switching with CSS variables
+- [ ] **User authentication** — Login/signup with JWT tokens
+- [ ] **Document management** — Delete endpoints, folder organization
+- [ ] **Batch upload** — Upload multiple files at once
+- [ ] **Export functionality** — Download generated content as .docx/.pdf
+- [ ] **Webhook integrations** — Connect to Slack, Discord, Notion
+- [ ] **Rate limiting** — Prevent API abuse with slowapi
 
 ---
 
