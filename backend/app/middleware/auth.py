@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 # Routes that do NOT require authentication
 PUBLIC_PATHS = {
     "/",
+    "/healthz",
     "/docs",
     "/redoc",
     "/openapi.json",

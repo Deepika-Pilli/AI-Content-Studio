@@ -33,6 +33,16 @@ async def home() -> HealthResponse:
 
 
 @router.get(
+    "/healthz",
+    summary="Lightweight health check for orchestrators",
+    description="Returns a minimal status response. No dependencies required.",
+)
+async def healthz() -> dict:
+    """Minimal health check for Kubernetes/Docker Compose."""
+    return {"status": "ok"}
+
+
+@router.get(
     "/test-key",
     response_model=HealthResponse,
     summary="Check API key configuration",
