@@ -9,9 +9,9 @@ and general content with configurable tone and parameters.
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.app.config import settings
-from backend.app.middleware import AuthMiddleware
-from backend.app.routes import (
+from app.config import settings
+from app.middleware import AuthMiddleware
+from app.routes import (
     health_router,
     generation_router,
     upload_router,

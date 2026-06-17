@@ -10,10 +10,10 @@ import logging
 from pathlib import Path
 from typing import List, Optional
 
-from backend.app.config import settings
-from backend.app.rag.text_splitter import TextSplitterService, text_splitter
-from backend.app.rag.embeddings import EmbeddingsService, embeddings_service
-from backend.app.rag.vector_store import VectorStoreService
+from app.config import settings
+from app.rag.text_splitter import TextSplitterService, text_splitter
+from app.rag.embeddings import EmbeddingsService, embeddings_service
+from app.rag.vector_store import VectorStoreService
 
 logger = logging.getLogger(__name__)
 

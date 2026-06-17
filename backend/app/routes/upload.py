@@ -12,8 +12,8 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, UploadFile, File, HTTPException
 
-from backend.app.models.upload_models import UploadResponse, UploadErrorResponse
-from backend.app.services.upload_service import upload_service
+from app.models.upload_models import UploadResponse, UploadErrorResponse
+from app.services.upload_service import upload_service
 
 logger = logging.getLogger(__name__)
 

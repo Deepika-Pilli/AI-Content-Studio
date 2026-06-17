@@ -6,8 +6,8 @@ and check configuration status (e.g., Groq API key).
 """
 
 from fastapi import APIRouter
-from backend.app.config import settings
-from backend.app.models.response_models import HealthResponse
+from app.config import settings
+from app.models.response_models import HealthResponse
 
 router = APIRouter(tags=["health"])
 

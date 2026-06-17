@@ -11,7 +11,7 @@ from typing import Optional
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from backend.app.config import settings
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 

@@ -8,9 +8,9 @@ with support for different content types, tones, and parameters.
 import logging
 
 from fastapi import APIRouter, HTTPException
-from backend.app.models.request_models import GenerateRequest
-from backend.app.models.response_models import GenerateResponse, ErrorResponse
-from backend.app.services.groq_service import GroqService
+from app.models.request_models import GenerateRequest
+from app.models.response_models import GenerateResponse, ErrorResponse
+from app.services.groq_service import GroqService
 
 logger = logging.getLogger(__name__)
 

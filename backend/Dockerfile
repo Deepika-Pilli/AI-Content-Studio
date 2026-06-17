@@ -8,12 +8,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
+# Copy the app directory (contains all source code)
+COPY app/ /app/app/
+
+# Copy requirements and install
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the rest of the application
-COPY . .
 
 # Create uploads and vectors directories
 RUN mkdir -p uploads vectors
@@ -22,4 +22,5 @@ RUN mkdir -p uploads vectors
 EXPOSE 8001
 
 # Run uvicorn with production settings
-CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "2"]
+# Note: Imports use from app. prefix (not backend.app.) for Render compatibility
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "2"]

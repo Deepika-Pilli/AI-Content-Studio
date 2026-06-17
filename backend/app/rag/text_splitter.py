@@ -11,7 +11,7 @@ from typing import List
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 
-from backend.app.config import settings
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 

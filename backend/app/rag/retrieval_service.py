@@ -11,9 +11,9 @@ from typing import List, Optional
 
 import numpy as np
 
-from backend.app.config import settings
-from backend.app.rag.embeddings import EmbeddingsService, embeddings_service
-from backend.app.rag.vector_store import VectorStoreService
+from app.config import settings
+from app.rag.embeddings import EmbeddingsService, embeddings_service
+from app.rag.vector_store import VectorStoreService
 
 logger = logging.getLogger(__name__)
 

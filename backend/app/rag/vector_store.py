@@ -16,7 +16,7 @@ import numpy as np
 import faiss
 from numpy.typing import NDArray
 
-from backend.app.config import settings
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 

@@ -12,9 +12,9 @@ Orchestrates the full pipeline:
 import logging
 from typing import List, Optional
 
-from backend.app.config import settings
-from backend.app.rag.retrieval_service import RetrievalService, SearchResult, retrieval_service
-from backend.app.services.groq_service import GroqService
+from app.config import settings
+from app.rag.retrieval_service import RetrievalService, SearchResult, retrieval_service
+from app.services.groq_service import GroqService
 
 logger = logging.getLogger(__name__)
 

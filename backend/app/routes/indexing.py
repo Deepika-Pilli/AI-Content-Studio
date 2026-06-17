@@ -13,9 +13,9 @@ from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from backend.app.config import settings
-from backend.app.rag.indexing_service import indexing_service
-from backend.app.rag.vector_store import VectorStoreService
+from app.config import settings
+from app.rag.indexing_service import indexing_service
+from app.rag.vector_store import VectorStoreService
 
 logger = logging.getLogger(__name__)
 

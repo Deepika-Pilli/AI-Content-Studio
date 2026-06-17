@@ -10,7 +10,7 @@ from fastapi import Request, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
-from backend.app.config import settings
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 

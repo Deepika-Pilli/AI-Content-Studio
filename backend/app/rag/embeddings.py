@@ -11,7 +11,7 @@ from typing import List, Optional
 import numpy as np
 from numpy.typing import NDArray
 
-from backend.app.config import settings
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 

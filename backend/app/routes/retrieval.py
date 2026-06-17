@@ -11,7 +11,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
 
-from backend.app.rag.retrieval_service import retrieval_service
+from app.rag.retrieval_service import retrieval_service
 
 logger = logging.getLogger(__name__)
 
