@@ -29,6 +29,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
     """Middleware that checks X-API-Key header on protected endpoints."""
 
     async def dispatch(self, request: Request, call_next):
+        # Skip auth for CORS preflight requests (browser OPTIONS)
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         # Skip auth for public paths
         if request.url.path in PUBLIC_PATHS or request.url.path.startswith(("/docs/", "/redoc/")):
             return await call_next(request)
