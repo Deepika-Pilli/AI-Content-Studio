@@ -12,6 +12,7 @@ python-dotenv==1.0.1
 # LLM / AI
 langchain-groq==0.2.4
 langchain-core==0.3.33
+langchain-text-splitters==0.3.5
 
 # Utilities
 python-multipart==0.0.19
