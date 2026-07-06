@@ -6,6 +6,7 @@ Provides endpoints for generating LinkedIn posts, blogs, tweets, emails,
 and general content with configurable tone and parameters.
 """
 
+import asyncio
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -93,7 +94,11 @@ app.include_router(rag_router, prefix="", tags=["rag"])
 
 @app.on_event("startup")
 async def startup_event() -> None:
-    """Log application startup, configuration status, and preload heavy models."""
+    """Log application startup and configuration status.
+
+    Starts a background task to warm up the embedding model so it does
+    not block the event loop or Render's port-binding scan.
+    """
     logger.info("=" * 60)
     logger.info("  %s v%s", settings.APP_TITLE, settings.APP_VERSION)
     logger.info("=" * 60)
@@ -108,30 +113,43 @@ async def startup_event() -> None:
     logger.info("=" * 60)
 
     # ------------------------------------------------------------------
-    # Preload SentenceTransformer embedding model at startup
+    # Non-blocking SentenceTransformer warmup
     # ------------------------------------------------------------------
-    # The model (~80 MB) is downloaded from HuggingFace on first use.
-    # Preloading here ensures the download happens during the boot
-    # phase (Render allows up to 180s for startup) rather than during
-    # the first POST /index/{document_id} request (which has a 50s
-    # request timeout). If preload fails, lazy loading still works
-    # as a fallback inside EmbeddingsService._load_model().
-    logger.info("Preloading embedding model '%s' ...", settings.EMBEDDING_MODEL)
-    try:
-        from sentence_transformers import SentenceTransformer
+    # The embedding model (~80 MB on HuggingFace) is normally loaded
+    # lazily by EmbeddingsService on the first index request.  That
+    # can exceed Render's 50 s request timeout.  We therefore schedule
+    # a background task that calls the existing lazy-loading path via
+    # asyncio.to_thread, so the download runs in a thread *after* the
+    # event loop has already started accepting connections.
+    # If the warm-up fails, indexing will still work on first request
+    # (lazy-load fallback in EmbeddingsService._load_model()).
+    # ------------------------------------------------------------------
 
-        _ = SentenceTransformer(
-            settings.EMBEDDING_MODEL,
-            trust_remote_code=True,
-        )
+    async def _warmup_embeddings() -> None:
         logger.info(
-            "Embedding model '%s' loaded successfully at startup",
+            "Warming up embedding model '%s' in background thread ...",
             settings.EMBEDDING_MODEL,
         )
-    except Exception as exc:
-        logger.warning(
-            "Failed to preload embedding model at startup: %s. "
-            "Lazy loading will be used as fallback on first index request.",
-            exc,
-        )
-    logger.info("=" * 60)
+        try:
+            from app.rag.embeddings import embeddings_service
+
+            # Force lazy-load via the shared singleton.
+            # _get_model() / _load_model() performs the actual download
+            # and creates the SentenceTransformer instance.
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(None, embeddings_service._get_model)
+
+            logger.info(
+                "Embedding model '%s' warm-up complete (loaded=%s)",
+                settings.EMBEDDING_MODEL,
+                embeddings_service.is_loaded,
+            )
+        except Exception as exc:
+            logger.warning(
+                "Embedding model warm-up failed: %s. "
+                "Lazy loading will be used as fallback.",
+                exc,
+            )
+
+    asyncio.create_task(_warmup_embeddings())
+    logger.info("Startup complete – port binding is unblocked.")
