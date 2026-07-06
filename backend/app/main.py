@@ -93,7 +93,7 @@ app.include_router(rag_router, prefix="", tags=["rag"])
 
 @app.on_event("startup")
 async def startup_event() -> None:
-    """Log application startup and configuration status."""
+    """Log application startup, configuration status, and preload heavy models."""
     logger.info("=" * 60)
     logger.info("  %s v%s", settings.APP_TITLE, settings.APP_VERSION)
     logger.info("=" * 60)
@@ -105,4 +105,33 @@ async def startup_event() -> None:
     logger.info("  Embedding dim      : %d", settings.EMBEDDING_DIMENSION)
     logger.info("  Docs (Swagger)     : /docs")
     logger.info("  Docs (ReDoc)       : /redoc")
+    logger.info("=" * 60)
+
+    # ------------------------------------------------------------------
+    # Preload SentenceTransformer embedding model at startup
+    # ------------------------------------------------------------------
+    # The model (~80 MB) is downloaded from HuggingFace on first use.
+    # Preloading here ensures the download happens during the boot
+    # phase (Render allows up to 180s for startup) rather than during
+    # the first POST /index/{document_id} request (which has a 50s
+    # request timeout). If preload fails, lazy loading still works
+    # as a fallback inside EmbeddingsService._load_model().
+    logger.info("Preloading embedding model '%s' ...", settings.EMBEDDING_MODEL)
+    try:
+        from sentence_transformers import SentenceTransformer
+
+        _ = SentenceTransformer(
+            settings.EMBEDDING_MODEL,
+            trust_remote_code=True,
+        )
+        logger.info(
+            "Embedding model '%s' loaded successfully at startup",
+            settings.EMBEDDING_MODEL,
+        )
+    except Exception as exc:
+        logger.warning(
+            "Failed to preload embedding model at startup: %s. "
+            "Lazy loading will be used as fallback on first index request.",
+            exc,
+        )
     logger.info("=" * 60)
