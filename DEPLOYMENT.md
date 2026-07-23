@@ -97,8 +97,8 @@ Ensure your repository is pushed to GitHub.
 4. Configure:
    - **Name:** `ai-content-studio-backend`
    - **Runtime:** `Python 3`
-   - **Build Command:** `pip install -r backend/requirements.txt`
-   - **Start Command:** `uvicorn backend.app.main:app --host 0.0.0.0 --port 10000`
+   - **Build Command:** `pip install -r requirements.txt`
+   - **Start Command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
    - **Root Directory:** `backend`
 5. Add Environment Variables:
 

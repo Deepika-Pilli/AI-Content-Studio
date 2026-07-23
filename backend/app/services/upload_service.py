@@ -65,7 +65,7 @@ class UploadService:
         safe_filename = self._generate_filename(file.filename, extension)
 
         # 4. Extract text content
-        text_content = self._extract_text(raw_bytes, extension, file.filename)
+        text_content = self.extract_text_from_bytes(raw_bytes, file.filename)
 
         # 5. Save file to disk
         file_path = await self._save_file(raw_bytes, safe_filename)
@@ -240,6 +240,14 @@ class UploadService:
                 exc,
             )
             return f"[Text extraction failed: {exc}]"
+
+    def extract_text_from_bytes(
+        self, data: bytes, filename: Optional[str]
+    ) -> str:
+        """Extract text from a supported document's raw bytes."""
+        extension = self._get_extension(filename)
+        self._validate_extension(extension)
+        return self._extract_text(data, extension, filename)
 
     def _extract_txt(self, data: bytes) -> str:
         """Decode plain text with UTF-8, falling back to latin-1."""

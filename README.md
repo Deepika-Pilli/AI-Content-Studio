@@ -463,15 +463,19 @@ X-API-Key: your-api-key
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
 
-1. Push repository to GitHub
-2. Go to [Render Dashboard](https://dashboard.render.com) → **New +** → **Web Service**
-3. Connect your GitHub repository
-4. Configure:
-   - **Root Directory:** `backend`
-   - **Build Command:** `pip install -r backend/requirements.txt`
-   - **Start Command:** `uvicorn backend.app.main:app --host 0.0.0.0 --port 10000`
-5. Add environment variables (see [Environment Variables](#-environment-variables))
-6. Click **Create Web Service**
+1. Push repository to GitHub.
+2. Go to [Render Dashboard](https://dashboard.render.com) → **New +** → **Blueprint**.
+3. Connect the repository. Render will use `render.yaml`.
+4. Set the required secret environment variables:
+   - `GROQ_API_KEY`
+   - `API_KEY`
+
+For manual Web Service setup, use the same Blueprint settings:
+
+- **Root Directory:** `backend`
+- **Build Command:** `pip install -r requirements.txt`
+- **Start Command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- **Health Check Path:** `/healthz`
 
 ### Vercel (Frontend)
 

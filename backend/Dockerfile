@@ -23,4 +23,4 @@ EXPOSE 8001
 
 # Run uvicorn with production settings
 # Note: Imports use from app. prefix (not backend.app.) for Render compatibility
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "2"]
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port \"${PORT:-8001}\" --workers 2"]

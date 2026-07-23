@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 from app.config import settings
 from app.rag.indexing_service import indexing_service
 from app.rag.vector_store import VectorStoreService
+from app.services.upload_service import upload_service
 
 logger = logging.getLogger(__name__)
 
@@ -146,16 +147,21 @@ async def index_document(
             },
         )
 
-    # Read the file text
+    # Re-extract text from the original uploaded file. This supports
+    # binary PDF and DOCX uploads as well as plain-text files.
     try:
-        text = file_path.read_text(encoding="utf-8", errors="replace")
+        with open(file_path, "rb") as file:
+            text = upload_service.extract_text_from_bytes(
+                file.read(),
+                document_id,
+            )
     except Exception as exc:
         raise HTTPException(
             status_code=500,
             detail={
                 "success": False,
                 "error": "Failed to read document",
-                "detail": f"Could not read file '{file_path}': {exc}",
+                "detail": f"Could not extract text from file '{file_path}': {exc}",
             },
         )
 

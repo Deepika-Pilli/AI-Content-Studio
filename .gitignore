@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node.js / frontend builds
+node_modules/
+dist/
+build/
+
+# Environment and OS files
+.DS_Store
+.env
+.env.*
+
+# Local test and generated artifacts
+frontend_bundle.js
+e2e_test_results.json
+test_*.ps1
