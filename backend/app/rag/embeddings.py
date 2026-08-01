@@ -178,10 +178,12 @@ class EmbeddingsService:
             The loaded SentenceTransformer model.
         """
         logger.info("_get_model started (loaded=%s)", self._model is not None)
+        lock_acquired = False
         try:
             if self._model is None:
                 logger.info("_get_model waiting for model initialization lock")
                 with self._model_lock:
+                    lock_acquired = True
                     logger.info("_get_model acquired model initialization lock")
                     if self._model is None:
                         logger.info("_get_model initializing model")
@@ -195,6 +197,9 @@ class EmbeddingsService:
         except Exception:
             logger.exception("_get_model failed")
             raise
+        finally:
+            if lock_acquired:
+                logger.info("_get_model released model initialization lock")
 
     def _load_model(self) -> None:
         """

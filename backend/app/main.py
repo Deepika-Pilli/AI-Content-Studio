@@ -143,7 +143,9 @@ async def startup_event() -> None:
 
             # Run the blocking model download in a thread pool so it
             # does not stall the asyncio event loop.
+            logger.info("Warm-up dispatching _get_model to a worker thread")
             await asyncio.to_thread(embeddings_service._get_model)
+            logger.info("Warm-up _get_model returned from the worker thread")
 
             logger.info(
                 "Embedding model '%s' warm-up complete (loaded=%s)",
@@ -151,7 +153,7 @@ async def startup_event() -> None:
                 embeddings_service.is_loaded,
             )
         except Exception as exc:
-            logger.warning(
+            logger.exception(
                 "Embedding model warm-up failed: %s. "
                 "Lazy loading will be used as fallback on first index request.",
                 exc,
