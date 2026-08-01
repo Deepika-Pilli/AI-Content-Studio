@@ -6,6 +6,7 @@ sentence-transformer model. Configured via EMBEDDING_MODEL setting.
 """
 
 import logging
+import threading
 from typing import List, Optional
 
 import numpy as np
@@ -41,6 +42,7 @@ class EmbeddingsService:
         self._model = None
         self._dimension = settings.EMBEDDING_DIMENSION
         self._loaded = False
+        self._model_lock = threading.Lock()
 
         logger.info(
             "EmbeddingsService configured: model=%s, dim=%d",
@@ -135,7 +137,9 @@ class EmbeddingsService:
             The loaded SentenceTransformer model.
         """
         if self._model is None:
-            self._load_model()
+            with self._model_lock:
+                if self._model is None:
+                    self._load_model()
         return self._model
 
     def _load_model(self) -> None:
