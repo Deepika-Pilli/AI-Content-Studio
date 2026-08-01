@@ -86,72 +86,82 @@ class IndexingService:
             len(text),
         )
 
-        # Step 1: Chunk the text
-        chunks = self.text_splitter.split_text(text, source=source)
-        if not chunks:
-            raise RuntimeError(
-                f"Text splitting produced zero chunks for document '{document_id}'."
+        try:
+            # Step 1: Chunk the text
+            chunks = self.text_splitter.split_text(text, source=source)
+            if not chunks:
+                raise RuntimeError(
+                    f"Text splitting produced zero chunks for document '{document_id}'."
+                )
+
+            logger.info("Step 1/3: Split into %d chunks", len(chunks))
+
+            # Step 2: Generate embeddings for all chunks
+            chunk_texts = [doc.page_content for doc in chunks]
+            logger.info("Calling embed_batch for %d chunks", len(chunk_texts))
+            vectors = self.embeddings.embed_batch(chunk_texts)
+            logger.info("embed_batch completed with %d vectors", len(vectors))
+            if not vectors:
+                raise RuntimeError(
+                    f"Embedding generation produced no vectors for '{document_id}'."
+                )
+
+            logger.info("Step 2/3: Generated %d embeddings (dim=%d)", len(vectors), vectors[0].shape[0])
+
+            # Step 3: Build metadata for each chunk
+            metadata_list = []
+            for doc in chunks:
+                metadata_list.append(
+                    {
+                        "document_id": document_id,
+                        "source": source,
+                        "chunk_index": doc.metadata.get("chunk_index", 0),
+                        "chunk_size": doc.metadata.get("chunk_size", len(doc.page_content)),
+                        "text": doc.page_content,
+                    }
+                )
+
+            # Step 4: Create FAISS index and add vectors
+            logger.info("Creating FAISS index (dimension=%d)", vectors[0].shape[0])
+            vector_store = VectorStoreService(dimension=vectors[0].shape[0])
+            vector_store.create_index()
+            logger.info("FAISS index created")
+            total = vector_store.add_vectors(vectors, metadata_list)
+
+            logger.info("Step 3/3: Stored %d vectors in FAISS index", total)
+
+            # Step 5: Persist to disk
+            logger.info("Saving FAISS index for document: %s", document_id)
+            saved_path = vector_store.save(document_id)
+            logger.info("FAISS index saved to: %s", saved_path)
+
+            result = {
+                "document_id": document_id,
+                "source": source,
+                "total_chunks": len(chunks),
+                "total_vectors": total,
+                "embedding_dimension": vectors[0].shape[0],
+                "chunk_size_config": text_splitter.chunk_size,
+                "chunk_overlap_config": text_splitter.chunk_overlap,
+                "embedding_model": self.embeddings.model_name,
+                "saved_to": str(saved_path),
+                "index_files": [
+                    str(saved_path / "index.faiss"),
+                    str(saved_path / "index.meta"),
+                ],
+            }
+
+            logger.info(
+                "Indexing complete: %d chunks, %d vectors -> %s",
+                len(chunks),
+                total,
+                saved_path,
             )
 
-        logger.info("Step 1/3: Split into %d chunks", len(chunks))
-
-        # Step 2: Generate embeddings for all chunks
-        chunk_texts = [doc.page_content for doc in chunks]
-        vectors = self.embeddings.embed_batch(chunk_texts)
-        if not vectors:
-            raise RuntimeError(
-                f"Embedding generation produced no vectors for '{document_id}'."
-            )
-
-        logger.info("Step 2/3: Generated %d embeddings (dim=%d)", len(vectors), vectors[0].shape[0])
-
-        # Step 3: Build metadata for each chunk
-        metadata_list = []
-        for doc in chunks:
-            metadata_list.append(
-                {
-                    "document_id": document_id,
-                    "source": source,
-                    "chunk_index": doc.metadata.get("chunk_index", 0),
-                    "chunk_size": doc.metadata.get("chunk_size", len(doc.page_content)),
-                    "text": doc.page_content,
-                }
-            )
-
-        # Step 4: Create FAISS index and add vectors
-        vector_store = VectorStoreService(dimension=vectors[0].shape[0])
-        vector_store.create_index()
-        total = vector_store.add_vectors(vectors, metadata_list)
-
-        logger.info("Step 3/3: Stored %d vectors in FAISS index", total)
-
-        # Step 5: Persist to disk
-        saved_path = vector_store.save(document_id)
-
-        result = {
-            "document_id": document_id,
-            "source": source,
-            "total_chunks": len(chunks),
-            "total_vectors": total,
-            "embedding_dimension": vectors[0].shape[0],
-            "chunk_size_config": text_splitter.chunk_size,
-            "chunk_overlap_config": text_splitter.chunk_overlap,
-            "embedding_model": self.embeddings.model_name,
-            "saved_to": str(saved_path),
-            "index_files": [
-                str(saved_path / "index.faiss"),
-                str(saved_path / "index.meta"),
-            ],
-        }
-
-        logger.info(
-            "Indexing complete: %d chunks, %d vectors -> %s",
-            len(chunks),
-            total,
-            saved_path,
-        )
-
-        return result
+            return result
+        except Exception:
+            logger.exception("Indexing pipeline failed for document: %s", document_id)
+            raise
 
     def index_from_file(self, file_path: str, document_id: Optional[str] = None) -> dict:
         """
