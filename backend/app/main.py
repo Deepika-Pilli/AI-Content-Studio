@@ -6,7 +6,6 @@ Provides endpoints for generating LinkedIn posts, blogs, tweets, emails,
 and general content with configurable tone and parameters.
 """
 
-import asyncio
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -96,10 +95,7 @@ app.include_router(rag_router, prefix="", tags=["rag"])
 async def startup_event() -> None:
     """Log application startup and configuration status.
 
-    Immediately logs configuration and schedules a background task
-    to warm up the embedding model. The background task runs via
-    asyncio.to_thread so it does NOT block startup or the event loop.
-    This ensures Uvicorn binds to $PORT before model download begins.
+    Logs application configuration after Uvicorn starts.
     """
     logger.info("=" * 60)
     logger.info("  %s v%s", settings.APP_TITLE, settings.APP_VERSION)
@@ -114,52 +110,4 @@ async def startup_event() -> None:
     logger.info("  Docs (ReDoc)       : /redoc")
     logger.info("=" * 60)
 
-    # ------------------------------------------------------------------
-    # Background SentenceTransformer warmup (non-blocking)
-    # ------------------------------------------------------------------
-    # The SentenceTransformer model (~80 MB from HuggingFace) is
-    # normally loaded lazily by EmbeddingsService on the first index
-    # request.  That download can exceed Render's 50 s request timeout.
-    #
-    # We schedule a background asyncio task that calls the existing
-    # lazy-load path in a thread.  Because asyncio.create_task()
-    # returns immediately, Uvicorn can bind to $PORT before the
-    # download even starts.  The background warmup reuses the exact
-    # same embeddings_service singleton that indexing will use later.
-    #
-    # If the warmup fails or hasn't finished by the time the first
-    # index request arrives, EmbeddingsService._load_model() still
-    # lazy-loads as a fallback (the model singleton is thread-safe
-    # because _load_model is guarded by a simple "if None" check).
-    # ------------------------------------------------------------------
-
-    async def _warmup_embeddings() -> None:
-        logger.info(
-            "Warming up embedding model '%s' in background thread ...",
-            settings.EMBEDDING_MODEL,
-        )
-        try:
-            from app.rag.embeddings import embeddings_service
-
-            # Run the blocking model download in a thread pool so it
-            # does not stall the asyncio event loop.
-            logger.info("Warm-up dispatching _get_model to a worker thread")
-            await asyncio.to_thread(embeddings_service._get_model)
-            logger.info("Warm-up _get_model returned from the worker thread")
-
-            logger.info(
-                "Embedding model '%s' warm-up complete (loaded=%s)",
-                settings.EMBEDDING_MODEL,
-                embeddings_service.is_loaded,
-            )
-        except Exception as exc:
-            logger.exception(
-                "Embedding model warm-up failed: %s. "
-                "Lazy loading will be used as fallback on first index request.",
-                exc,
-            )
-
-    # Schedule the background task.  create_task returns immediately;
-    # the actual model download will start after the event loop resumes.
-    asyncio.create_task(_warmup_embeddings())
-    logger.info("Startup complete – port binding is unblocked.")
+    logger.info("Startup complete.")

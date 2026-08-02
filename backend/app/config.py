@@ -6,12 +6,13 @@ for the AI Content Studio backend.
 """
 
 import os
-from typing import Set
 from pathlib import Path
+from typing import Set
 from dotenv import load_dotenv
 
 # Load .env from backend/ directory (always relative to this file, not CWD)
-_env_path = Path(__file__).resolve().parent.parent / ".env"
+_backend_dir = Path(__file__).resolve().parent.parent
+_env_path = _backend_dir / ".env"
 load_dotenv(dotenv_path=_env_path)
 
 
@@ -30,8 +31,8 @@ class Settings:
     APP_VERSION: str = "1.0.0"
 
     # Upload
-    UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "backend/uploads")
-    VECTOR_DIR: str = os.getenv("VECTOR_DIR", "backend/vectors")
+    UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", str(_backend_dir / "uploads"))
+    VECTOR_DIR: str = os.getenv("VECTOR_DIR", str(_backend_dir / "vectors"))
 
     # File upload constraints
     ALLOWED_EXTENSIONS: Set[str] = {".pdf", ".docx", ".txt"}
@@ -48,6 +49,13 @@ class Settings:
         "sentence-transformers/all-MiniLM-L6-v2",
     )
     EMBEDDING_DIMENSION: int = 384  # all-MiniLM-L6-v2 output dimension
+    EMBEDDING_CACHE_DIR: str = os.getenv(
+        "SENTENCE_TRANSFORMERS_HOME",
+        str(_backend_dir / ".cache" / "sentence-transformers"),
+    )
+    EMBEDDING_LOCAL_FILES_ONLY: bool = os.getenv(
+        "EMBEDDING_LOCAL_FILES_ONLY", "false"
+    ).lower() in {"1", "true", "yes"}
 
     @property
     def is_groq_configured(self) -> bool:
